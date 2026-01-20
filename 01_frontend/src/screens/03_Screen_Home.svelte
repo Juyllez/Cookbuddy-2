@@ -1,6 +1,6 @@
 <script>
-  import { flow } from "../stores/flow.js";
-  import { onMount } from "svelte";
+  import { flow } from '../stores/flow.js';
+  import { onMount } from 'svelte';
 
   let recommendedRecipes = [];
   let loading = false;
@@ -40,7 +40,7 @@
 <div class="container">
   <!-- Empfohlene Rezepte -->
   <div class="recommendations-section">
-    <h3>Current trends</h3>
+    <h2>Current trends</h2>
     
     {#if loading}
       <p>Loading...</p>
@@ -53,7 +53,7 @@
             {:else}
               <div class="recipe-image placeholder">🍽️</div>
             {/if}
-            <h4>{recipe.name}</h4>
+            <h3>{recipe.name}</h3>
           </div>
         {/each}
       </div>
@@ -61,6 +61,8 @@
       <p>Julia is too poor for API</p>
     {/if}
   </div>
+
+  <!-- Navigation Buttons -->
 </div>
 
 <style>
@@ -75,8 +77,8 @@
     margin-top: -30px;
   }
 
-  .recommendations-section h3 {
-    font-size: 20px;
+  .recommendations-section h2 {
+    /* font-size: 20px; */
     /* margin-bottom: 16px; */
     color: #333;
   }
@@ -91,7 +93,7 @@
     background: #f9f9f9;
     border-radius: 12px;
     padding: 12px;
-    text-align: center;
+    text-align: left;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     border: 1px solid #e0e0e0;
@@ -119,9 +121,10 @@
     font-size: 48px;
   }
 
-  .recipe-card h4 {
-    font-size: 15px;
+  .recipe-card h3 {
+    /* font-size: 15px; */
     margin: 0;
     color: #333;
   }
+
 </style>

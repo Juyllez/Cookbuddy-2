@@ -5,19 +5,27 @@
   let localProfile = { ...$flow.profile };
   let nameInput = $flow.profile.name || "";
   let allergyInput = "";
-  let skillSliderValue = 50; // 0-100 for Noob to Chef
+  let skillIndex = 2; // 0: Noob, 2: Intermediate, 4: Chef
   
-  // Initialize skillSliderValue based on existing profile
+  const skillOptions = [
+    { label: "Noob", value: "beginner" },
+    { label: "Beginner", value: "beginner" },
+    { label: "Intermediate", value: "intermediate" },
+    { label: "Advanced", value: "advanced" },
+    { label: "Chef", value: "advanced" }
+  ];
+  
+  // Initialize skillIndex based on existing profile
   if (localProfile.skillLevel === "beginner") {
-    skillSliderValue = 16;
+    skillIndex = 1;
   } else if (localProfile.skillLevel === "intermediate") {
-    skillSliderValue = 50;
+    skillIndex = 2;
   } else if (localProfile.skillLevel === "advanced") {
-    skillSliderValue = 83;
+    skillIndex = 3;
   }
   
   // Initialize skillLevel for new profiles
-  updateSkillLevel(skillSliderValue);
+  updateSkillLevel(skillIndex);
 
   function nextStep() {
     step += 1;
@@ -32,15 +40,9 @@
     localProfile.name = nameInput;
   }
   
-  function updateSkillLevel(value) {
-    skillSliderValue = value;
-    if (value < 33) {
-      localProfile.skillLevel = "beginner";
-    } else if (value < 66) {
-      localProfile.skillLevel = "intermediate";
-    } else {
-      localProfile.skillLevel = "advanced";
-    }
+  function updateSkillLevel(index) {
+    skillIndex = index;
+    localProfile.skillLevel = skillOptions[index].value;
   }
 
   function addAllergy() {
@@ -64,7 +66,7 @@
     console.log("Saving profile:", localProfile);
     flow.saveProfile(localProfile);
     flow.update(f => {
-      const target = f.returnAfterProfile ?? 3; // go to home screen (screen 3) after profile setup
+      const target = f.returnAfterProfile ?? 2; // go to home screen (screen 3) after profile setup
       return { ...f, screen: target, returnAfterProfile: null };
     });
   }
@@ -122,15 +124,13 @@
       <h2>How much cooking experience do you have?</h2>
       
       <div class="slider-container">
-        <span class="slider-label">−</span>
-        <input type="range" min="0" max="100" value={skillSliderValue} on:input={(e) => updateSkillLevel(e.target.value)} class="slider" />
-        <span class="slider-label">+</span>
+        <input type="range" min="0" max="4" step="1" bind:value={skillIndex} on:input={(e) => updateSkillLevel(e.target.value)} class="slider" />
       </div>
       
-      <div class="slider-labels">
-        <span>Noob</span>
-        <span>Decent Skills</span>
-        <span>Chef</span>
+      <div class="skill-ticks">
+        {#each skillOptions as opt}
+          <span>{opt.label}</span>
+        {/each}
       </div>
 
       <div class="nav-buttons">
@@ -186,25 +186,25 @@
           class={localProfile.dietType === "omnivore" ? "selected" : ""}
           on:click={() => { localProfile.dietType = "omnivore"; }}
         >
-          I have no preferences
+          Omnivore
         </button>
         <button 
           class={localProfile.dietType === "pescatarian" ? "selected" : ""}
           on:click={() => { localProfile.dietType = "pescatarian"; }}
         >
-          No meat, but fish is fine
+          Pescatarian
         </button>
         <button 
           class={localProfile.dietType === "vegetarian" ? "selected" : ""}
           on:click={() => { localProfile.dietType = "vegetarian"; }}
         >
-          No meat or fish
+           Vegetarian
         </button>
         <button 
           class={localProfile.dietType === "vegan" ? "selected" : ""}
           on:click={() => { localProfile.dietType = "vegan"; }}
         >
-          No animal products
+          Vegan
         </button>
       </div>
 
@@ -264,7 +264,7 @@
     gap: 20px;
   }
 
-  h1 {
+  /* h1 {
     margin: 0;
     font-size: 1.8rem;
     font-weight: 600;
@@ -274,7 +274,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-  }
+  } */
 
   .form-group {
     display: flex;
@@ -346,6 +346,14 @@
     font-size: 0.85rem;
     color: #666;
     margin-top: 4px;
+  }
+
+  .skill-ticks {
+    display: flex;
+    justify-content: space-between;
+    opacity: 0.7;
+    font-size: 0.85rem;
+    margin-top: 12px;
   }
 
   .allergies-input {

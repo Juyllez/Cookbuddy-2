@@ -10,7 +10,7 @@
         <br/>
         <button
             class="btn-primary"
-            on:click={() => flow.update((f) => ({ ...f, screen: 7 }))}
+            on:click={() => flow.update((f) => ({ ...f, screen: 3 }))}
         >
             Browse Recipes
         </button>

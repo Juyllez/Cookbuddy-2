@@ -1,13 +1,3 @@
-<!-- Home Screen Profil unvollständig
- - geht zu 01_Profil setup 
- skills
- allergien
- diet
- Profil vollständig
- - geht zu 02_Setup Screen -->
-
-
-
 <script>
 	import { flow } from "../stores/flow.js";
 
@@ -22,10 +12,9 @@
 
 	<div class="tagline">
 		<h1>COOKBUDDY</h1>
-		<br/>		<br/>
 	</div>
 		<h2>Waste less. Taste more.</h2>
-		<p>Find the perfect Meal for today.</p>
+		<!-- <p>Find the perfect meal for today.</p> -->
 
 	<button class="start-btn" on:click={start}> Get started</button>
 </div>
@@ -51,7 +40,7 @@
 	.start-btn {
 		width: 140px;
 		height: 50px;
-		border-radius: 26px;
+		border-radius: 25px;
 		border: none;
 		background: #C1EEBB;
 		color: #111;

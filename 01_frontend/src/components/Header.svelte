@@ -25,8 +25,8 @@
 <header>
   <div class="header-content">
     <div class="title-section" on:click={goHome} role="button" tabindex="0">
-      <h2>COOKBUDDY</h2>
-      <h3>Waste less, cook more.</h3>
+      <h1>COOKBUDDY</h1>
+      <h2>Waste less, cook more.</h2>
     </div>
   </div>
 </header>
@@ -49,7 +49,7 @@
   .header-content {
     /* max-width: 1200px; */
     margin: 0 auto;
-    font-size: 24px;
+    /* font-size: 24px; */
     /* display: flex; */
     /* justify-content: flex-start; */
     align-items: center;
