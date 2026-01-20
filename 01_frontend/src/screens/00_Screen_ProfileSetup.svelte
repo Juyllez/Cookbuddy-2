@@ -51,7 +51,7 @@
 	.start-btn {
 		width: 140px;
 		height: 50px;
-		border-radius: 25px;
+		border-radius: 26px;
 		border: none;
 		background: #C1EEBB;
 		color: #111;
