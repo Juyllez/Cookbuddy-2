@@ -38,16 +38,16 @@
 	}
 
 	.start-btn {
-		width: 140px;
+		width: 160px;
 		height: 50px;
-		border-radius: 25px;
+		border-radius: 30px;
 		border: none;
-		background: #C1EEBB;
-		color: #111;
+		background: #7ec87e;
+		color: white;
 		font-size: 1.1rem;
 		font-weight: 600;
 		cursor: pointer;
-		/* transition: transform 0.15s ease, box-shadow 0.15s ease; */
+		transition: all 0.2s;
 	}
 
 	.start-btn:hover {

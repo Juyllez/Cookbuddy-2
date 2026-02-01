@@ -91,8 +91,10 @@
     <p>No recipe selected.</p>
     <button on:click={back}>Back to results</button>
   {:else}
+    <button class="back-btn" on:click={back}>
+      ←
+    </button>
     <div class="recipe-header">
-      <button class="back-link" on:click={back}>← Back to results</button>
       <h2>{recipe.title}</h2>
       
       <div class="quick-stats">
@@ -186,19 +188,24 @@
     padding: 20px;
   }
 
-  .back-link {
+  .back-btn {
     background: none;
     border: none;
-    color: #ff6b6b;
+    color: #044000;
     cursor: pointer;
-    font-size: 1rem;
-    padding: 0;
-    margin-bottom: 12px;
-    font-weight: 600;
+    font-size: 24px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    margin-bottom: 16px;
+    width: 40px;
+    height: 40px;
   }
 
-  .back-link:hover {
-    text-decoration: underline;
+  .back-btn:hover {
+    opacity: 0.7;
   }
 
   .recipe-header {
@@ -292,9 +299,9 @@
 
   .save-btn,
   .cook-btn {
-    padding: 14px 20px;
+    padding: 14px 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 30px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -417,9 +424,9 @@
 
   textarea {
     flex: 1;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
     font-family: inherit;
     font-size: 0.95rem;
     resize: none;
@@ -438,10 +445,10 @@
 
   .chat-input-form button {
     padding: 10px 20px;
-    background: #ff6b6b;
+    background: #7ec87e;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s;

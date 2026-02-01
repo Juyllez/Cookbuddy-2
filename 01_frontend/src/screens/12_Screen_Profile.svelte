@@ -510,9 +510,9 @@
 
   .view-btn,
   .remove-btn {
-    padding: 8px 12px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 20px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.2s;

@@ -17,7 +17,8 @@
   import Screen11 from "./screens/11_Screen_Results.svelte";
   import Screen12 from "./screens/12_Screen_Profile.svelte";
 
-  $: showNavigation = $flow.screen >= 3;
+  $: showNavigation = $flow.screen >= 1;
+  $: showBottomNav = $flow.screen >= 3;
 </script>
 
 <div id="wrapper">
@@ -49,7 +50,7 @@
     {/if}
   </main>
 
-  {#if showNavigation}
+  {#if showBottomNav}
     <BottomNav />
   {/if}
 </div>

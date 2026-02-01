@@ -103,7 +103,7 @@
 
   {#if step === 1}
     <div class="step">
-      <h1>Set up your profile:</h1>
+      <h1>Set up your profile</h1>
 
       <div class="form-group">
         <input 
@@ -121,6 +121,12 @@
 
   {:else if step === 2}
     <div class="step">
+      {#if step > 1}
+        <button class="back-btn" on:click={prevStep}>
+          ←
+        </button>
+      {/if}
+      
       <h2>How much cooking experience do you have?</h2>
       
       <div class="slider-container">
@@ -134,13 +140,19 @@
       </div>
 
       <div class="nav-buttons">
-        <button class="secondary" on:click={prevStep}>Back</button>
-        <button on:click={nextStep}>Next</button>
+        <button on:click={nextStep} disabled={!canProceed()}>Next</button>
       </div>
     </div>
 
+
   {:else if step === 3}
     <div class="step">
+      {#if step > 1}
+        <button class="back-btn" on:click={prevStep}>
+          ←
+        </button>
+      {/if}
+
       <h2>Do you have any allergies or intolerances?</h2>
       
       <div class="allergies-input">
@@ -171,14 +183,19 @@
       {/if}
 
       <div class="nav-buttons">
-        <button class="secondary" on:click={prevStep}>Back</button>
-        <button on:click={nextStep}>Next</button>
+        <button on:click={nextStep} disabled={!canProceed()}>Next</button>
       </div>
     </div>
 
   {:else if step === 4}
     <!-- Dietary Preference -->
     <div class="step">
+      {#if step > 1}
+        <button class="back-btn" on:click={prevStep}>
+          ←
+        </button>
+      {/if}
+      
       <h2>What's your dietary preference?</h2>
       
       <div class="diet-options">
@@ -209,7 +226,6 @@
       </div>
 
       <div class="nav-buttons">
-        <button class="secondary" on:click={prevStep}>Back</button>
         <button on:click={() => { if (localProfile.dietType) finishProfile(); }} disabled={!localProfile.dietType}>Finish</button>
       </div>
     </div>
@@ -283,9 +299,9 @@
   }
 
   input[type="text"] {
-    padding: 12px;
+    padding: 12px 20px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 25px;
     font-size: 1rem;
     font-family: inherit;
   }
@@ -441,10 +457,11 @@
 
   .nav-buttons button {
     flex: 1;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    background: white;
+    padding: 12px 24px;
+    border: 2px solid #7ec87e;
+    border-radius: 30px;
+    background: #7ec87e;
+    color: white;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
@@ -461,13 +478,24 @@
     background: #6ab96a;
   }
 
-  .nav-buttons button.secondary {
-    background: #f5f5f5;
-    color: #333;
+  .back-btn {
+    background: none;
+    border: none;
+    color: #044000;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    margin-bottom: 16px;
+    width: 40px;
+    height: 40px;
   }
 
-  .nav-buttons button.secondary:hover {
-    background: #e0e0e0;
+  .back-btn:hover {
+    opacity: 0.7;
   }
 
   .nav-buttons button:disabled {

@@ -67,7 +67,9 @@
 </script>
 
 <div class="header-section">
-  <button class="back-btn-top" on:click={back}>← Back</button>
+  <button class="back-btn" on:click={back}>
+    ←
+  </button>
   <h2>Recommended Recipes</h2>
 </div>
 
@@ -139,20 +141,24 @@
     flex: 1;
   }
 
-  .back-btn-top {
-    padding: 8px 16px;
-    background: white;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+  .back-btn {
+    background: none;
+    border: none;
+    color: #044000;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s;
+    font-size: 24px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    margin-bottom: 8px;
+    width: 40px;
+    height: 40px;
   }
 
-  .back-btn-top:hover {
-    background: #f5f5f5;
-    border-color: #ff6b6b;
+  .back-btn:hover {
+    opacity: 0.7;
   }
 
   .info-box {
@@ -285,11 +291,11 @@
   }
 
   .details-btn {
-    padding: 8px 16px;
-    background: #ff6b6b;
+    padding: 10px 20px;
+    background: #7ec87e;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s;

@@ -44,12 +44,13 @@
     }
 
     .btn-primary {
-        background: #C1EEBB;
-        color: black;
+        background: #7ec87e;
+        color: white;
         border: none;
-        padding: 12px 40px;
-        border-radius: 8px;
+        padding: 14px 40px;
+        border-radius: 30px;
         font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
         transition: background 0.3s;
     }

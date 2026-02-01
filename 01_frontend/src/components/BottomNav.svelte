@@ -1,8 +1,6 @@
 <script>
   import { flow } from "../stores/flow.js";
-  import { onMount } from "svelte";
   import { Home, Search, User } from 'lucide-svelte';
-
 </script>
 
 <nav class="bottom-nav">
@@ -16,8 +14,12 @@
 
   <button
     class="nav-btn search-btn"
-    class:active={$flow.screen === 4}
-    on:click={() => flow.update((f) => ({ ...f, screen: 4 }))}
+    on:click={() => {
+      // Next button - go to next screen based on current screen
+      const nextScreens = { 3: 4, 4: 5, 5: 6, 6: 11, 11: 12, 12: 3 };
+      const nextScreen = nextScreens[$flow.screen] || $flow.screen + 1;
+      flow.update((f) => ({ ...f, screen: nextScreen }));
+    }}
   >
     <Search size={24} />
   </button>
@@ -38,7 +40,6 @@
     background: #C1EEBB;
     border-top: none;
     padding: 12px 0 20px 0;
-    /* gap: 10px; */
     border-radius: 50px;
     margin: 0 10px 10px 10px;
     position: relative;
@@ -46,23 +47,16 @@
   }
 
   .nav-btn {
-    /* flex: 1; */
     padding: 12px;
     border: none;
     background: transparent;
     cursor: pointer;
-    /* font-size: 14px; */
     color: #888888;
-    /* transition: all 0.3s; */
     border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-
-  /* .nav-btn:hover {
-    color: #999;
-  } */
 
   .search-btn {
     flex: 0 0 auto;
@@ -84,10 +78,16 @@
 
   .search-btn:hover {
     background: #C1EEBB;
-    /* transform: translateY(-2px); */
   }
 
   .nav-btn.active {
     color: #044000;
+  }
+
+  /* Mobile-first: hide bottom nav once we hit desktop widths */
+  @media (min-width: 900px) {
+    .bottom-nav {
+      display: none;
+    }
   }
 </style>
