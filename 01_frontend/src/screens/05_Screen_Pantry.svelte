@@ -41,18 +41,23 @@
   }
 
   function back() {
-    flow.update((f) => ({ ...f, screen: 3 })); // Zurück zu Screen_Taste
+    flow.update((f) => ({ ...f, screen: 4 })); // Zurück zu Screen_Taste Step 2
   }
 </script>
+
+<div class="progress-container">
+  <div class="progress-bar">
+    <div class="progress-fill" style="width: 90%"></div>
+  </div>
+  <div class="progress-text">3/3</div>
+</div>
 
 <div class="header-section">
   <button class="back-btn" on:click={back}>
     ←
   </button>
-  <h2>Which ingredients need to be used up?</h2>
 </div>
-<p class="subtitle">(Optional) Add ingredients that need to be used today</p>
-
+  <h2>Which ingredients need to be used up?</h2>
 <form class="addBar" on:submit|preventDefault={addIngredient}>
   <input
     type="text"
@@ -64,7 +69,7 @@
 </form>
 
 {#if $flow.pantry.length === 0}
-  <p class="hint">No ingredients yet. You can add them or skip.</p>
+  <p class="hint">No ingredients yet.</p>
 {:else}
   <ul class="list">
     {#each $flow.pantry as item (item.name)}
@@ -85,13 +90,41 @@
   <button class="next" on:click={next}>Next</button>
 </div>
 
-<style>
-  .header-section {
+<style>  
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #7ec87e;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #666;
+    min-width: 40px;
+    text-align: right;
+  }
+  /* .header-section {
     display: flex;
     align-items: center;
     gap: 16px;
     margin-bottom: 4px;
-  }
+  } */
 
   .back-btn {
     background: none;
@@ -113,15 +146,15 @@
     opacity: 0.7;
   }
 
-  h2 {
+  /* h2 {
     margin: 0;
     flex: 1;
-  }
+  } */
 
   .addBar {
     display: flex;
     gap: 8px;
-    max-width: 420px;
+    /* max-width: 420px; */
     margin: 10px 0 16px;
   }
 
@@ -136,7 +169,7 @@
 
   input:focus {
     outline: none;
-    border-color: #ff6b6b;
+    border-color: #044000;
   }
 
   .addBar button {
@@ -150,13 +183,13 @@
   }
 
   .addBar button:hover {
-    background: #ff5252;
+    background: #6ab96a;
   }
 
-  .subtitle {
+  /* .subtitle {
     opacity: 0.7;
     margin-top: -8px;
-  }
+  } */
 
   .hint {
     opacity: 0.7;
@@ -178,7 +211,7 @@
     padding: 12px;
     background: #f9f9f9;
     border-radius: 8px;
-    border-left: 4px solid #ff6b6b;
+    border-left: 4px solid #044000;
   }
 
   .name {
@@ -192,16 +225,16 @@
 
   .remove-btn {
     padding: 6px 12px;
-    background: #ffe0e0;
+    background: #d4edda;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.9rem;
-    color: #d32f2f;
+    color: #155724;
   }
 
   .remove-btn:hover {
-    background: #ffcccb;
+    background: #c3e6cb;
   }
 
   .footer {
@@ -210,7 +243,7 @@
     margin-top: auto;
     position: fixed;
     left: 50%;
-    bottom: 90px;
+    bottom: 180px;
     transform: translateX(-50%);
     width: calc(100% - 40px);
     max-width: 1200px;

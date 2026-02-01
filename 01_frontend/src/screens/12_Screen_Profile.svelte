@@ -1,7 +1,10 @@
 <script>
+  import { Pencil } from "lucide-svelte";
   import { flow } from "../stores/flow.js";
 
   let tab = "saved"; // "saved", "cooked"
+  let editMode = false;
+  let editableProfile = null;
 
   function back() {
     flow.update((f) => ({ ...f, screen: 2 }));
@@ -25,7 +28,36 @@
   }
 
   function editProfile() {
-    flow.update((f) => ({ ...f, returnAfterProfile: 12, screen: 1 }));
+    editMode = true;
+    editableProfile = {
+      name: $flow.profile?.name || "",
+      skillLevel: $flow.profile?.skillLevel || null,
+      allergies: [...($flow.profile?.allergies || [])],
+      allergiesText: ($flow.profile?.allergies || []).join(", "),
+      dietType: $flow.profile?.dietType || "omnivore",
+    };
+  }
+
+  function cancelEdit() {
+    editMode = false;
+    editableProfile = null;
+  }
+
+  function saveProfileEdits() {
+    if (!editableProfile) return;
+    const allergies = (editableProfile.allergiesText || "")
+      .split(",")
+      .map((a) => a.trim())
+      .filter(Boolean);
+    flow.saveProfile({
+      ...$flow.profile,
+      name: editableProfile.name,
+      skillLevel: editableProfile.skillLevel || null,
+      dietType: editableProfile.dietType || "omnivore",
+      allergies,
+    });
+    editMode = false;
+    editableProfile = null;
   }
 
   function removeRecipe(list, index) {
@@ -40,17 +72,19 @@
     flow.update((f) => ({
       ...f,
       selectedRecipe: recipe,
-      screen: 6
+      screen: 6,
     }));
   }
 </script>
 
 <div class="profile-container">
   <div class="profile-header">
-    <h1>{$flow.profile?.name ? `${$flow.profile.name}'s Profile` : "Your Profile"}</h1>
+    <h2>
+      {$flow.profile?.name ? `${$flow.profile.name}'s Profile` : "Your Profile"}
+    </h2>
   </div>
 
-  <div class="tabs">
+  <!-- <div class="tabs">
     <button
       class="tab"
       class:active={tab === "saved"}
@@ -58,105 +92,57 @@
     >
       Saved Recipes ({$flow.savedRecipes.length})
     </button>
-    <button
-      class="tab"
-      class:active={tab === "cooked"}
-      on:click={() => (tab = "cooked")}
-    >
-      Cooked Recipes ({$flow.cookedRecipes.length})
-    </button>
-  </div>
+  </div> -->
 
   <div class="tab-content">
-    {#if tab === "saved"}
-      <section class="recipes-section">
-        <h2>Saved Recipes</h2>
+    <section class="recipes-section">
+      <h3>Saved Recipes</h3>
 
-        {#if $flow.savedRecipes.length === 0}
-          <div class="empty-state">
-            <p>No saved recipes yet.</p>
-            <p class="hint">
-              Save your favorite recipes to find them here later!
-            </p>
-          </div>
-        {:else}
-          <div class="recipes-list">
-            {#each $flow.savedRecipes as recipe, index}
-              <div class="recipe-item">
-                <div class="recipe-info">
-                  <h3>{recipe.title}</h3>
-                  <p class="recipe-meta">
-                    {recipe.minutes} min · {recipe.match}% match
-                  </p>
-                  <p class="saved-date">
-                    Saved: {new Date(recipe.savedAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div class="recipe-actions">
-                  <button class="view-btn" on:click={() => viewRecipe(recipe)}>
-                    View
-                  </button>
-                  <button
-                    class="remove-btn"
-                    on:click={() => removeRecipe("saved", index)}
-                  >
-                    Remove
-                  </button>
+      {#if $flow.savedRecipes.length === 0}
+        <div class="empty-state">
+          <p>No saved recipes yet.</p>
+          <p class="hint">
+            Save your favorite recipes to find them here later!
+          </p>
+        </div>
+      {:else}
+        <div class="recipes-list">
+          {#each $flow.savedRecipes as recipe, index}
+            <div
+              class="recipe-item"
+              role="button"
+              tabindex="0"
+              on:click={() => viewRecipe(recipe)}
+              on:keydown={(e) => (e.key === "Enter" || e.key === " ") && viewRecipe(recipe)}
+            >
+              {#if recipe.image}
+                <img class="recipe-thumb" src={recipe.image} alt={recipe.title} />
+              {/if}
+              <div class="recipe-info">
+                <h3>{recipe.title}</h3>
+                <div class="recipe-tags">
+                  <span class="tag">{recipe.dietType || "omnivore"}</span>
+                  <span class="tag">{recipe.minutes} min</span>
                 </div>
               </div>
-            {/each}
-          </div>
-        {/if}
-      </section>
-    {:else if tab === "cooked"}
-      <section class="recipes-section">
-        <h2>Cooked Recipes</h2>
-
-        {#if $flow.cookedRecipes.length === 0}
-          <div class="empty-state">
-            <p>No cooked recipes yet.</p>
-            <p class="hint">
-              Cook and save recipes to track your culinary journey!
-            </p>
-          </div>
-        {:else}
-          <div class="recipes-list">
-            {#each $flow.cookedRecipes as recipe, index}
-              <div class="recipe-item cooked">
-                <div class="cooked-badge">Cooked</div>
-                <div class="recipe-info">
-                  <h3>{recipe.title}</h3>
-                  <p class="recipe-meta">
-                    {recipe.minutes} min · {recipe.match}% match
-                  </p>
-                  <p class="cooked-date">
-                    Cooked: {new Date(recipe.cookedAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div class="recipe-actions">
-                  <button class="view-btn" on:click={() => viewRecipe(recipe)}>
-                    View
-                  </button>
-                  <button
-                    class="remove-btn"
-                    on:click={() => removeRecipe("cooked", index)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </section>
-    {/if}
+              <button
+                class="remove-btn"
+                on:click|stopPropagation={() => removeRecipe("saved", index)}
+              >
+                ×
+              </button>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </section>
   </div>
 
   <section class="profile-section">
     <div class="preferences-header">
-      <h2>Your Preferences</h2>
-      <button class="edit-inline" on:click={editProfile}>
-        Edit profile
+      <h3>Preferences</h3>
+      <button class="icon-btn" on:click={editProfile} aria-label="Edit profile">
+        <Pencil size={18} />
       </button>
     </div>
 
@@ -164,69 +150,102 @@
       <div class="profile-grid">
         <div class="profile-item">
           <label>Name</label>
-          <div class="value">{$flow.profile.name || "Not set"}</div>
+          {#if editMode}
+            <input class="input" type="text" bind:value={editableProfile.name} placeholder="Name" />
+          {:else}
+            <div class="value">{$flow.profile.name || "Not set"}</div>
+          {/if}
         </div>
 
         <div class="profile-item">
           <label>Kitchen Skill Level</label>
-          <div class="value">
-            {#if $flow.profile.skillLevel === "beginner"}
-              Beginner
-            {:else if $flow.profile.skillLevel === "intermediate"}
-              Comfortable in the kitchen
-            {:else if $flow.profile.skillLevel === "advanced"}
-              Feeling adventurous
-            {:else}
-              Not set
-            {/if}
-          </div>
+          {#if editMode}
+            <select class="input" bind:value={editableProfile.skillLevel}>
+              <option value="" disabled>Select skill level</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Comfortable</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          {:else}
+            <div class="value">
+              {#if $flow.profile.skillLevel === "beginner"}
+                Beginner
+              {:else if $flow.profile.skillLevel === "intermediate"}
+                Comfortable
+              {:else if $flow.profile.skillLevel === "advanced"}
+                Advanced
+              {:else}
+                Not set
+              {/if}
+            </div>
+          {/if}
         </div>
 
         <div class="profile-item">
           <label>Dietary Preference</label>
-          <div class="value">
-            {#if $flow.profile.dietType === "omnivore"}
-              Omnivore
-            {:else if $flow.profile.dietType === "pescatarian"}
-              Pescatarian
-            {:else if $flow.profile.dietType === "vegetarian"}
-              Vegetarian
-            {:else if $flow.profile.dietType === "vegan"}
-              Vegan
-            {:else}
-              Not set
-            {/if}
-          </div>
+          {#if editMode}
+            <select class="input" bind:value={editableProfile.dietType}>
+              <option value="omnivore">Omnivore</option>
+              <option value="pescatarian">Pescatarian</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+            </select>
+          {:else}
+            <div class="value">
+              {#if $flow.profile.dietType === "omnivore"}
+                Omnivore
+              {:else if $flow.profile.dietType === "pescatarian"}
+                Pescatarian
+              {:else if $flow.profile.dietType === "vegetarian"}
+                Vegetarian
+              {:else if $flow.profile.dietType === "vegan"}
+                Vegan
+              {:else}
+                Not set
+              {/if}
+            </div>
+          {/if}
         </div>
 
         <div class="profile-item full-width">
           <label>Allergies & Intolerances</label>
-          <div class="value">
-            {#if $flow.profile.allergies.length === 0}
-              <span class="none">None specified</span>
-            {:else}
-              <div class="allergies-tags">
-                {#each $flow.profile.allergies as allergy}
-                  <span class="tag">{allergy}</span>
-                {/each}
-              </div>
-            {/if}
-          </div>
+          {#if editMode}
+            <input
+              class="input"
+              type="text"
+              placeholder="Comma separated (e.g. nuts, milk)"
+              bind:value={editableProfile.allergiesText}
+            />
+          {:else}
+            <div class="value">
+              {#if $flow.profile.allergies.length === 0}
+                <span class="none">None specified</span>
+              {:else}
+                <div class="allergies-tags">
+                  {#each $flow.profile.allergies as allergy}
+                    <span class="tag">{allergy}</span>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/if}
         </div>
       </div>
 
-      <div class="reset-row">
-        <button class="reset-btn" on:click={resetProfile}>
-          Reset Profile
-        </button>
-      </div>
+      {#if editMode}
+        <div class="reset-row">
+          <button class="reset-btn" on:click={resetProfile}>Reset Profile</button>
+          <button class="reset-btn" on:click={cancelEdit}>Cancel</button>
+          <button class="save-btn" on:click={saveProfileEdits}>Save</button>
+        </div>
+      {/if}
     {/if}
   </section>
 </div>
 
 <style>
   .profile-container {
-    max-width: 900px;
+    /* max-width: 900px; */
     margin: 0 auto;
     padding: 20px;
   }
@@ -238,53 +257,6 @@
     margin-bottom: 32px;
   }
 
-  .back-btn {
-    background: none;
-    border: none;
-    color: #ff6b6b;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 0;
-    font-weight: 600;
-  }
-
-  .back-btn:hover {
-    text-decoration: underline;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 2rem;
-  }
-
-  .tabs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 32px;
-    border-bottom: 2px solid #e0e0e0;
-  }
-
-  .tab {
-    padding: 12px 16px;
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #999;
-    transition: all 0.2s;
-  }
-
-  .tab:hover {
-    color: #ff6b6b;
-  }
-
-  .tab.active {
-    color: #ff6b6b;
-    border-bottom-color: #ff6b6b;
-  }
 
   .tab-content {
     animation: fadeIn 0.2s ease-in;
@@ -301,24 +273,24 @@
 
   .profile-section,
   .recipes-section {
-    padding: 24px;
-    background: #f9f9f9;
-    border-radius: 12px;
+    padding: 12px;
+    /* background: #f9f9f9; */
+    /* border-radius: 12px; */
   }
 
   .preferences-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+      justify-content: space-between;
     gap: 12px;
     margin-bottom: 12px;
   }
 
-  h2 {
+  /* h2 {
     margin: 0 0 24px 0;
     font-size: 1.6rem;
     color: #333;
-  }
+  } */
 
   .edit-inline {
     border: 1px solid #ddd;
@@ -332,11 +304,31 @@
     transition: all 0.2s;
   }
 
-  .edit-inline:hover {
+  .icon-btn {
+    border: 1px solid #ddd;
+    background: white;
+    color: #555;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .icon-btn:hover {
+    border-color: #7ec87e;
+    color: #2f6b2f;
+    background: #e9f7e7;
+  }
+
+  /* .edit-inline:hover {
     border-color: #ff6b6b;
     color: #ff6b6b;
     background: #fff7f7;
-  }
+  } */
 
   .profile-grid {
     display: grid;
@@ -349,7 +341,7 @@
     background: white;
     padding: 16px;
     border-radius: 8px;
-    border-left: 4px solid #ff6b6b;
+    border-left: 4px solid #044000;
   }
 
   .profile-item.full-width {
@@ -362,6 +354,20 @@
     color: #666;
     margin-bottom: 8px;
     font-size: 0.9rem;
+  }
+
+  .input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: #7ec87e;
   }
 
   .value {
@@ -429,6 +435,23 @@
     display: flex;
     justify-content: flex-end;
     margin-top: 24px;
+    gap: 12px;
+  }
+
+  .save-btn {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 2px solid #4caf50;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    flex: 1;
+  }
+
+  .save-btn:hover {
+    background: #c8e6c9;
   }
 
   .empty-state {
@@ -460,25 +483,16 @@
     padding: 16px;
     background: white;
     border-radius: 8px;
-    border-left: 4px solid #ff6b6b;
     position: relative;
+    cursor: pointer;
   }
 
-  .recipe-item.cooked {
-    border-left-color: #4caf50;
-    background: #fafff9;
-  }
-
-  .cooked-badge {
-    position: absolute;
-    top: -12px;
-    right: 12px;
-    padding: 4px 12px;
-    background: #4caf50;
-    color: white;
+  .recipe-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
     border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    flex-shrink: 0;
   }
 
   .recipe-info {
@@ -490,49 +504,45 @@
     font-size: 1.1rem;
   }
 
-  .recipe-meta {
-    margin: 4px 0;
-    opacity: 0.7;
-    font-size: 0.9rem;
-  }
-
-  .saved-date,
-  .cooked-date {
-    margin: 4px 0 0 0;
-    opacity: 0.6;
-    font-size: 0.85rem;
-  }
-
-  .recipe-actions {
+  .recipe-tags {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
+    margin-top: 6px;
   }
 
-  .view-btn,
-  .remove-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-
-  .view-btn {
+  .tag {
+    display: inline-block;
+    padding: 6px 12px;
     background: #e3f2fd;
+    border-radius: 20px;
+    font-size: 0.85rem;
     color: #1976d2;
-  }
-
-  .view-btn:hover {
-    background: #bbdefb;
+    font-weight: 600;
   }
 
   .remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
     background: #ffebee;
     color: #c62828;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
   }
 
   .remove-btn:hover {
     background: #ffcdd2;
+    transform: scale(1.1);
   }
 </style>

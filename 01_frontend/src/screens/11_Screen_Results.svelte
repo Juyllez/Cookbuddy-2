@@ -6,6 +6,7 @@
   let error = null;
   let results = [];
   let fallbackMessage = null;
+  $: displayedResults = results.slice(0, 3);
 
   function buildQuery(f) {
     const dietType = f.profile?.dietType ?? "omnivore";
@@ -67,10 +68,8 @@
 </script>
 
 <div class="header-section">
-  <button class="back-btn" on:click={back}>
-    ←
-  </button>
-  <h2>Recommended Recipes</h2>
+  <button class="back-btn" on:click={back}> ← </button>
+  <h2>Recommended recipes</h2>
 </div>
 
 {#if fallbackMessage}
@@ -87,29 +86,51 @@
 {:else if results.length === 0}
   <p>No matching recipes found. Try adjusting your preferences.</p>
 {:else}
+  {#if results.length === 1}
+    <div class="alt-heading">Recipes you might also like</div>
+  {/if}
   <div class="results-container">
-    {#each results as r, i (r.id)}
-      <div class="recipe-card" class:rank-1={i === 0} class:rank-2={i === 1} class:rank-3={i === 2}>
+    {#each displayedResults as r, i (r.id)}
+      <div
+        class="recipe-card"
+        class:rank-1={i === 0}
+        class:rank-2={i === 1}
+        class:rank-3={i === 2}
+      >
         <div class="rank-badge">#{i + 1}</div>
-        
-        {#if r.thumb}
-          <img src={r.thumb} alt={r.title} />
-        {/if}
 
-        <div class="recipe-info">
-          <h3>{r.title}</h3>
-          
-          <div class="stats">
-            <div class="stat">
-              <span class="label">Match:</span>
-              <span class="value">{r.match}%</span>
+        <div class="top-row">
+          {#if r.thumb}
+            <div class="thumb-wrap">
+              <img class="recipe-thumb" src={r.thumb} alt={r.title} />
             </div>
-            <div class="stat">
-              <span class="label">Time:</span>
-              <span class="value">{r.minutes} min</span>
+          {/if}
+
+          <div class="recipe-info">
+            <h3>{r.title}</h3>
+
+            <div class="recipe-tags">
+              <span class="tag">{$flow.profile?.dietType || "omnivore"}</span>
+              <span class="tag">{r.minutes} min</span>
+              {#if $flow.taste && $flow.taste !== "any"}
+                <span class="tag">{$flow.taste}</span>
+              {/if}
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <span class="label">Match:</span>
+                <span class="value">{r.match}%</span>
+              </div>
+              <div class="stat">
+                <span class="label">Time:</span>
+                <span class="value">{r.minutes} min</span>
+              </div>
             </div>
           </div>
+        </div>
 
+        <div class="bottom-row">
           {#if r.matchedPantryItems && r.matchedPantryItems.length > 0}
             <div class="matched-items">
               <span class="matched-label">Uses from pantry:</span>
@@ -121,7 +142,9 @@
             </div>
           {/if}
 
-          <button class="details-btn" on:click={() => openDetails(r)}>View Details →</button>
+          <button class="details-btn" on:click={() => openDetails(r)}
+            >See recipe</button
+          >
         </div>
       </div>
     {/each}
@@ -161,6 +184,14 @@
     opacity: 0.7;
   }
 
+  .alt-heading {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
   .info-box {
     padding: 12px 16px;
     border-radius: 8px;
@@ -189,9 +220,9 @@
   .recipe-card {
     position: relative;
     display: flex;
-    gap: 16px;
-    padding: 16px;
-    border: 2px solid #e0e0e0;
+    flex-direction: column;
+    padding: 0;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
     background: white;
     overflow: hidden;
@@ -199,37 +230,12 @@
   }
 
   .recipe-card:hover {
-    border-color: #ff6b6b;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
-  }
-
-  .recipe-card.rank-1 {
-    border: 2px solid #ffd700;
-    background: #fffef5;
+    border-color: #cfcfcf;
   }
 
   .recipe-card.rank-1 .rank-badge {
-    background: #ffd700;
-    color: #333;
-  }
-
-  .recipe-card.rank-2 {
-    border: 2px solid #c0c0c0;
-    background: #fafafa;
-  }
-
-  .recipe-card.rank-2 .rank-badge {
-    background: #c0c0c0;
-    color: #333;
-  }
-
-  .recipe-card.rank-3 {
-    border: 2px solid #cd7f32;
-  }
-
-  .recipe-card.rank-3 .rank-badge {
-    background: #cd7f32;
-    color: white;
+    background: #7ec87e;
+    color: #022000;
   }
 
   .rank-badge {
@@ -241,13 +247,27 @@
     font-weight: 700;
     font-size: 0.85rem;
     z-index: 1;
+    background: #e0e0e0;
+    color: #555;
   }
 
-  img {
-    width: 100px;
-    height: 100px;
+  .top-row {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .thumb-wrap {
+    width: 160px;
+    align-self: stretch;
+    display: flex;
+  }
+
+  .recipe-thumb {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 0;
     flex-shrink: 0;
   }
 
@@ -256,11 +276,20 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding: 16px 16px 16px 0;
   }
 
-  h3 {
-    margin: 0;
-    font-size: 1.2rem;
+  .bottom-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px 16px 16px;
+  }
+
+  .recipe-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .stats {
@@ -273,11 +302,10 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 8px;
+    padding: 10px;
     background: #f9f9f9;
-    border-radius: 6px;
+    border-radius: 25px;
   }
-
 
   .label {
     font-size: 0.8rem;
@@ -318,32 +346,34 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 8px;
-    background: #e8f5e9;
-    border-radius: 6px;
+    padding: 10px;
+    background: #f2f4f7;
+    border-radius: 20px;
     margin-top: 8px;
+    /* margin-left: 8px; */
   }
 
   .matched-label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #2e7d32;
+    color: #2f6b2f;
+    border-radius: 20px;
   }
 
   .matched-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    border-radius: 20px;
   }
 
   .tag {
     display: inline-block;
     padding: 4px 10px;
-    background: #4caf50;
-    color: white;
+    background: #e3f2fd;
+    color: #1976d2;
     border-radius: 12px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
   }
 </style>
-

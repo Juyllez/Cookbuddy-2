@@ -9,19 +9,16 @@
     class:active={$flow.screen === 3}
     on:click={() => flow.update((f) => ({ ...f, screen: 3 }))}
   >
-    <Home size={24} />
+    <Home size={32} />
   </button>
 
   <button
     class="nav-btn search-btn"
     on:click={() => {
-      // Next button - go to next screen based on current screen
-      const nextScreens = { 3: 4, 4: 5, 5: 6, 6: 11, 11: 12, 12: 3 };
-      const nextScreen = nextScreens[$flow.screen] || $flow.screen + 1;
-      flow.update((f) => ({ ...f, screen: nextScreen }));
+      flow.update((f) => ({ ...f, screen: 4 }));
     }}
   >
-    <Search size={24} />
+    <Search size={32} />
   </button>
 
   <button
@@ -29,7 +26,7 @@
     class:active={$flow.screen === 12}
     on:click={() => flow.update((f) => ({ ...f, screen: 12 }))}
   >
-    <User size={24} />
+    <User size={32} />
   </button>
 </nav>
 

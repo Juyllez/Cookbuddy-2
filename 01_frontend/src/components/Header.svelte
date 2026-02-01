@@ -44,13 +44,13 @@
 
     <nav class="header-nav" aria-label="Primary">
       <button class="nav-btn" on:click={goHome} aria-label="Home">
-        <Home size={20} />
+        <Home size={32} />
       </button>
       <button class="nav-btn" on:click={goNext} aria-label="Next">
-        <Search size={20} />
+        <Search size={32} />
       </button>
       <button class="nav-btn" on:click={goProfile} aria-label="Profile">
-        <User size={20} />
+        <User size={32} />
       </button>
     </nav>
   </div>
@@ -60,15 +60,13 @@
   header {
     background: #c1eebb;
     color: black;
-    padding: 10px 16px;
-    border-bottom-left-radius: 40px;
-    border-bottom-right-radius: 40px;
+    padding: 20px 26px;
+    border-bottom-right-radius: 60px;
     margin-bottom: 16px;
     position: sticky;
-    /* top: 0; */
-    /* z-index: 100; */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
+    top: 0;
+    z-index: 100; /* Ensure header is above other content */
   }
 
   .header-content {
@@ -104,12 +102,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s ease, color 0.2s ease;
+    width: 40px;
+    height: 40px;
   }
 
   .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.5);
-    color: #033000;
+    background: #7ec87e;
+    color: #022000;
   }
 
   @media (min-width: 900px) {

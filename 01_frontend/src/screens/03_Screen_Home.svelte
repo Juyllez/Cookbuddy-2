@@ -11,6 +11,24 @@
   let isAnimating = false;
   let autoPlayInterval;
 
+  function getRecipeTags(recipe) {
+    const tags = [];
+    const diet = $flow?.profile?.dietType || "omnivore";
+    const taste = $flow?.taste || "";
+
+    tags.push(`${diet}`);
+    
+    if (recipe?.minutes) {
+      tags.push(`${recipe.minutes} min`);
+    }
+    
+    if (taste && taste !== "any") {
+      tags.push(taste);
+    }
+
+    return tags;
+  }
+
   onMount(async () => {
     await loadRecommendedRecipes();
     startAutoPlay();
@@ -114,16 +132,12 @@
 
   function getCardStyle(index) {
     const position = (index - currentIndex + recommendedRecipes.length) % recommendedRecipes.length;
-    const zIndex = recommendedRecipes.length - position;
-    const opacity = position === 0 ? 1 : position === 1 ? 0.8 : 0;
-    const scale = position === 0 ? 1 : position === 1 ? 0.95 : 1;
-    const yOffset = position === 0 ? 0 : position === 1 ? 10 : 0;
+    const isActive = position === 0;
+    const display = isActive ? 'flex' : 'none';
     
     return `
-      z-index: ${zIndex};
-      opacity: ${opacity};
-      transform: scale(${scale}) translateY(${yOffset}px);
-      pointer-events: ${position === 0 ? 'auto' : 'none'};
+      display: ${display};
+      pointer-events: ${isActive ? 'auto' : 'none'};
     `;
   }
 
@@ -162,6 +176,11 @@
             {/if}
             <div class="recipe-info">
               <h3>{recipe.name}</h3>
+              <div class="tag-row">
+                {#each getRecipeTags(recipe) as tag}
+                  <span class="tag">{tag}</span>
+                {/each}
+              </div>
             </div>
           </div>
         {/each}
@@ -195,7 +214,7 @@
   }
 
   .recommendations-section {
-    margin-top: -30px;
+    margin-top: 10px;
   }
 
   .recommendations-section h2 {
@@ -206,18 +225,18 @@
   .stack-container {
     position: relative;
     width: 100%;
-    height: 500px;
+    min-height: auto;
     perspective: 1000px;
     user-select: none;
+    margin-bottom: 20px;
   }
 
   .recipe-card {
-    position: absolute;
+    position: relative;
     width: 100%;
-    height: 100%;
     background: #f9f9f9;
     border-radius: 20px;
-    padding: 16px;
+    padding: 0;
     text-align: left;
     cursor: grab;
     transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -225,7 +244,8 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
+    overflow: hidden;
   }
 
   .recipe-card:active {
@@ -233,9 +253,10 @@
   }
 
   .recipe-image {
-    width: 100%;
-    height: 320px;
-    border-radius: 16px;
+    width: calc(100% + 32px);
+    margin: -16px -16px 0 -16px;
+    height: 300px;
+    border-radius: 20px 20px 0 0;
     object-fit: cover;
     background: #eee;
     display: block;
@@ -253,17 +274,33 @@
     flex-direction: column;
     gap: 8px;
     flex: 1;
+    padding: 16px;
   }
 
-  .recipe-card h3 {
+  .recipe-info h3 {
     margin: 0;
     color: #333;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+  }
+
+  .recipe-info .tag-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .recipe-info .tag {
+    padding: 6px 12px;
+    background: #e7f5f7;
+    color: #2f5c6b;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid #cce7ec;
   }
 
   /* Dot Indicators */
@@ -272,7 +309,8 @@
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin-top: 20px;
+    padding-top: 16px;
+    margin-top: 0;
   }
 
   .dot {

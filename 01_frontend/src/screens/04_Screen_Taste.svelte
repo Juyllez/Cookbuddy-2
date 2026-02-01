@@ -37,14 +37,16 @@
       screen: 5
     }));
   }
+
+  $: progressWidth = currentStep === 1 ? (taste ? '33%' : '10%') : '67%';
 </script>
 
 <div class="screen">
   <div class="progress-container">
     <div class="progress-bar">
-      <div class="progress-fill" style="width: {currentStep === 1 ? '50%' : '100%'}"></div>
+      <div class="progress-fill" style="width: {progressWidth}"></div>
     </div>
-    <div class="progress-text">{currentStep}/2</div>
+    <div class="progress-text">{currentStep}/3</div>
   </div>
 
   <button class="back-btn" on:click={goBack}>
@@ -90,12 +92,12 @@
     gap: 16px;
   }
 
-  .progress-section {
+  /* .progress-section {
     display: flex;
     align-items: center;
     gap: 16px;
     margin-bottom: 16px;
-  }
+  } */
 
   .progress-text {
     font-size: 0.9rem;
@@ -208,7 +210,7 @@
     margin-top: auto;
     position: fixed;
     left: 50%;
-    bottom: 90px;
+    bottom: 180px;
     transform: translateX(-50%);
     width: calc(100% - 40px);
     max-width: 1200px;
