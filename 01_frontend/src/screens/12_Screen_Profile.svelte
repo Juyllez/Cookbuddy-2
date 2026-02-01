@@ -115,8 +115,8 @@
               on:click={() => viewRecipe(recipe)}
               on:keydown={(e) => (e.key === "Enter" || e.key === " ") && viewRecipe(recipe)}
             >
-              {#if recipe.image}
-                <img class="recipe-thumb" src={recipe.image} alt={recipe.title} />
+              {#if recipe.image || recipe.thumb}
+                <img class="recipe-thumb" src={recipe.image || recipe.thumb} alt={recipe.title} />
               {/if}
               <div class="recipe-info">
                 <h3>{recipe.title}</h3>

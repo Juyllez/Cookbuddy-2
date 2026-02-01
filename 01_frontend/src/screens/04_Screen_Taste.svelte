@@ -1,9 +1,24 @@
 <script>
+  import { onMount } from "svelte";
   import { flow } from "../stores/flow.js";
 
   let taste = $flow.taste || null;
   let timeIndex = 2; // default to middle option
   let currentStep = taste ? 2 : 1; // 1 = taste selection, 2 = time selection
+
+  onMount(() => {
+    taste = null;
+    timeIndex = 2;
+    currentStep = 1;
+    flow.update((f) => ({
+      ...f,
+      taste: null,
+      cookingTime: null,
+      pantry: [],
+      results: [],
+      selectedRecipe: null,
+    }));
+  });
 
   const timeOptions = [
     { label: "Quick · 10 min", value: "10" },
