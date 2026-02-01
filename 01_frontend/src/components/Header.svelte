@@ -1,8 +1,21 @@
 <script>
   import { flow } from "../stores/flow.js";
+  import { Home, Search, User } from "lucide-svelte";
 
   function goHome() {
     flow.update((f) => ({ ...f, screen: 3 }));
+  }
+
+  function goNext() {
+    const nextScreens = { 3: 4, 4: 5, 5: 6, 6: 11, 11: 12, 12: 3 };
+    flow.update((f) => {
+      const nextScreen = nextScreens[f.screen] || f.screen + 1;
+      return { ...f, screen: nextScreen };
+    });
+  }
+
+  function goProfile() {
+    flow.update((f) => ({ ...f, screen: 12 }));
   }
 
   function goBack() {
@@ -28,6 +41,18 @@
       <h1>COOKBUDDY</h1>
       <h2>Waste less, cook more.</h2>
     </div>
+
+    <nav class="header-nav" aria-label="Primary">
+      <button class="nav-btn" on:click={goHome} aria-label="Home">
+        <Home size={20} />
+      </button>
+      <button class="nav-btn" on:click={goNext} aria-label="Next">
+        <Search size={20} />
+      </button>
+      <button class="nav-btn" on:click={goProfile} aria-label="Profile">
+        <User size={20} />
+      </button>
+    </nav>
   </div>
 </header>
 
@@ -47,12 +72,11 @@
   }
 
   .header-content {
-    /* max-width: 1200px; */
     margin: 0 auto;
-    /* font-size: 24px; */
-    /* display: flex; */
-    /* justify-content: flex-start; */
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 16px;
   }
 
   .title-section {
@@ -62,5 +86,35 @@
 
   .title-section:hover {
     opacity: 0.8;
+  }
+
+  .header-nav {
+    display: none;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-btn {
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #044000;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: #033000;
+  }
+
+  @media (min-width: 900px) {
+    .header-nav {
+      display: flex;
+    }
   }
 </style>

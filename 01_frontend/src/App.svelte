@@ -68,6 +68,5 @@
     flex: 1;
     overflow-y: auto;
     padding: 10px;
-    padding-bottom: 80px;
   }
 </style>
