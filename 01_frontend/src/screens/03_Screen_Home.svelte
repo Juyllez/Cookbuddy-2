@@ -15,7 +15,14 @@
     try {
       // Read diet preference from profile (omnivore/vegetarian/vegan/pescatarian)
       dietType = $flow?.profile?.dietType || "omnivore";
-      const res = await fetch(`http://localhost:3000/recipes/recommended?dietType=${encodeURIComponent(dietType)}`);
+      const allergies = ($flow?.profile?.allergies || []).join(",");
+      
+      let url = `http://localhost:3000/recipes/recommended?dietType=${encodeURIComponent(dietType)}`;
+      if (allergies) {
+        url += `&allergies=${encodeURIComponent(allergies)}`;
+      }
+      
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`API error ${res.status}`);
       
       const data = await res.json();

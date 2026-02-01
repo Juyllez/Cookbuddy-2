@@ -17,7 +17,15 @@ app.get("/status", (req, res) => {
 app.get("/recipes/recommended", async (req, res) => {
     console.log("Received recommended recipes request", req.query);
     try {
-        const { dietType = "omnivore" } = req.query;
+        const { dietType = "omnivore", allergies: allergiesParam = "" } = req.query;
+        
+        // Parse allergies from comma-separated string
+        const allergies = (allergiesParam || "")
+            .split(",")
+            .map(a => a.trim().toLowerCase())
+            .filter(Boolean);
+        
+        console.log("Filtering for allergies:", allergies);
 
         // Build base URL for popular recipes
         let apiUrl = `https://api.spoonacular.com/recipes/complexSearch?query=&number=20&sort=popularity&addRecipeInformation=true`;
@@ -26,6 +34,11 @@ app.get("/recipes/recommended", async (req, res) => {
         if (dietType === "vegetarian") apiUrl += "&diet=vegetarian";
         if (dietType === "vegan") apiUrl += "&diet=vegan";
         if (dietType === "pescatarian") apiUrl += "&diet=pescatarian";
+        
+        // Add intolerances to API call if provided
+        if (allergies.length > 0) {
+            apiUrl += `&intolerances=${encodeURIComponent(allergies.join(","))}`;
+        }
 
         apiUrl += `&apiKey=${process.env.SPOONACULAR_API_KEY}`;
 
@@ -39,6 +52,31 @@ app.get("/recipes/recommended", async (req, res) => {
         }
 
         let results = data.results || [];
+        
+        // Additional client-side allergy filtering for safety
+        if (allergies.length > 0) {
+            results = results.filter(recipe => {
+                const ingredientNames = [];
+                if (Array.isArray(recipe.extendedIngredients)) {
+                    for (const ing of recipe.extendedIngredients) {
+                        const name = (ing?.name || ing?.original || "").toLowerCase();
+                        if (name) ingredientNames.push(name);
+                    }
+                }
+                if (recipe.title) ingredientNames.push(recipe.title.toLowerCase());
+                
+                // Check if any allergy keyword is found in ingredients
+                const hasAllergy = allergies.some(allergy => 
+                    ingredientNames.some(name => name.includes(allergy))
+                );
+                
+                if (hasAllergy) {
+                    console.log(`🚫 Filtered out "${recipe.title}" - contains allergy: ${allergies.join(", ")}`);
+                }
+                
+                return !hasAllergy;
+            });
+        }
 
         // Defensive filtering for animal products if dietType=vegan
         if (dietType === "vegan") {
@@ -90,10 +128,17 @@ app.get("/recipes", async (req, res) => {
             taste = "any", 
             pantry = "",
             difficulty = "medium",
-            cookingTime = "30"
+            cookingTime = "30",
+            allergies: allergiesParam = ""
         } = req.query;
         
-        console.log("Parameters:", { dietType, taste, difficulty, cookingTime, pantry });
+        // Parse allergies from comma-separated string
+        const allergies = (allergiesParam || "")
+            .split(",")
+            .map(a => a.trim().toLowerCase())
+            .filter(Boolean);
+        
+        console.log("Parameters:", { dietType, taste, difficulty, cookingTime, pantry, allergies });
         
         // Build query term by taste and pantry items
         function buildQueryTerm() {
@@ -127,6 +172,11 @@ app.get("/recipes", async (req, res) => {
             
             // Add time range filter
             apiUrl += `&maxReadyTime=${timeRange.max}`;
+            
+            // Add intolerances/allergies filter
+            if (allergies.length > 0) {
+                apiUrl += `&intolerances=${encodeURIComponent(allergies.join(","))}`;
+            }
             
             if (includeIngredients) {
                 apiUrl += `&includeIngredients=${encodeURIComponent(includeIngredients)}`;

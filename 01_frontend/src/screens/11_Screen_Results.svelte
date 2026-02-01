@@ -12,12 +12,14 @@
     const taste = f.taste ?? "any";
     const pantry = (f.pantry ?? []).map((x) => x.name).join(",");
     const cookingTime = f.cookingTime ?? "30";
+    const allergies = (f.profile?.allergies ?? []).join(",");
 
     const params = new URLSearchParams();
     params.set("dietType", dietType);
     params.set("taste", taste);
     params.set("cookingTime", cookingTime);
     if (pantry) params.set("pantry", pantry);
+    if (allergies) params.set("allergies", allergies);
 
     return params.toString();
   }
