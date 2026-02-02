@@ -446,7 +446,7 @@
     color: #2e7d32;
     border: 2px solid #4caf50;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: 32px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.2s;
@@ -485,7 +485,7 @@
     gap: 16px;
     padding: 16px;
     background: white;
-    border-radius: 8px;
+    border-radius: 32px;
     position: relative;
     cursor: pointer;
   }
@@ -494,7 +494,7 @@
     width: 72px;
     height: 72px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 32px;
     flex-shrink: 0;
   }
 

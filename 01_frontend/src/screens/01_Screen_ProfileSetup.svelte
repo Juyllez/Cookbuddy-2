@@ -155,7 +155,7 @@
 
       <h2>Do you have any allergies or intolerances?</h2>
       
-      <div class="allergies-input">
+      <form class="allergies-input" on:submit|preventDefault={addAllergy}>
         <input
           type="text"
           placeholder="e.g. peanuts, gluten, lactose..."
@@ -163,7 +163,14 @@
           on:keydown={handleAllergyKeydown}
           autocomplete="off"
         />
-      </div>
+        <button 
+          type="submit"
+          class="add-btn"
+          disabled={!allergyInput.trim()}
+        >
+          Add
+        </button>
+      </form>
 
       {#if localProfile.allergies.length > 0}
         <div class="allergies-list">
@@ -359,13 +366,14 @@
 
   .allergies-input {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    border-radius: 25px;
+    gap: 8px;
+    margin: 10px 0 16px;
   }
 
   .allergies-input input {
-    padding: 12px;
+    flex: 1;
+    min-width: 0;
+    padding: 12px 20px;
     border: 2px solid #e0e0e0;
     border-radius: 25px;
     font-size: 1rem;
@@ -374,6 +382,29 @@
   .allergies-input input:focus {
     outline: none;
     border-color: #7ec87e;
+  }
+
+  .allergies-input .add-btn {
+    padding: 12px 20px;
+    background-color: #7ec87e;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+  }
+
+  .allergies-input .add-btn:hover:not(:disabled) {
+    background-color: #6ab96a;
+  }
+
+  .allergies-input .add-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .allergies-list {
