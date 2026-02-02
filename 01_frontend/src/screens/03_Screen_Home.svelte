@@ -79,10 +79,27 @@
     }
   }
 
-  function selectRecipe(recipe) {
-    flow.update(f => ({
+  async function selectRecipe(recipe) {
+    try {
+      const res = await fetch(`http://localhost:3000/recipes/details/${recipe.id}`);
+      if (res.ok) {
+        const detailed = await res.json();
+        flow.update((f) => ({
+          ...f,
+          selectedRecipe: { ...recipe, ...detailed },
+          returnAfterRecipe: 3,
+          screen: 6
+        }));
+        return;
+      }
+    } catch (e) {
+      console.error("Failed to load recipe details:", e);
+    }
+
+    flow.update((f) => ({
       ...f,
       selectedRecipe: recipe,
+      returnAfterRecipe: 3,
       screen: 6
     }));
   }
@@ -295,12 +312,12 @@
 
   .recipe-info .tag {
     padding: 6px 12px;
-    background: #e7f5f7;
-    color: #2f5c6b;
+    background: #e3f2fd;
+    color: #1976d2;
     border-radius: 999px;
     font-size: 0.85rem;
     font-weight: 600;
-    border: 1px solid #cce7ec;
+    border: 1px solid #1976d2;
   }
 
   /* Dot Indicators */

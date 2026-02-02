@@ -70,7 +70,11 @@
   }
 
   function back() {
-    flow.update((f) => ({ ...f, screen: 11 }));
+    flow.update((f) => ({
+      ...f,
+      screen: f.returnAfterRecipe ?? 11,
+      returnAfterRecipe: null,
+    }));
   }
 
   function saveRecipe() {
@@ -172,9 +176,9 @@
 
       <section class="chat-section">
         <h3>Ask Cookbuddy to help you</h3>
-        <p class="chat-hint">
+        <p class="chat-hint">  </p>
           <!-- Use our AI assistant to find alternatives for any ingredient
-        </p>
+       
         <br> -->
 
         <div class="chat-box">

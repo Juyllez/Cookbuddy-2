@@ -348,21 +348,6 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
-  .slider-label {
-    font-size: 1.2rem;
-    color: #7ec87e;
-    font-weight: bold;
-    width: 20px;
-    text-align: center;
-  }
-
-  .slider-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: #666;
-    margin-top: 4px;
-  }
 
   .skill-ticks {
     display: flex;
@@ -376,12 +361,13 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    border-radius: 25px;
   }
 
   .allergies-input input {
     padding: 12px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 25px;
     font-size: 1rem;
   }
 
@@ -432,7 +418,7 @@
   .diet-options button {
     padding: 12px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 25px;
     background: white;
     cursor: pointer;
     text-align: left;

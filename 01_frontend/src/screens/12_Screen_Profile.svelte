@@ -72,6 +72,7 @@
     flow.update((f) => ({
       ...f,
       selectedRecipe: recipe,
+      returnAfterRecipe: 12,
       screen: 6,
     }));
   }
@@ -297,7 +298,7 @@
     background: white;
     color: #555;
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: 32px;
     cursor: pointer;
     font-weight: 600;
     font-size: 0.95rem;
@@ -310,7 +311,7 @@
     color: #555;
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -340,7 +341,7 @@
   .profile-item {
     background: white;
     padding: 16px;
-    border-radius: 8px;
+    border-radius: 32px;
     border-left: 4px solid #044000;
   }
 
@@ -388,10 +389,12 @@
   .tag {
     display: inline-block;
     padding: 6px 12px;
-    background: #ffe0e0;
+    background: #e3f2fd;
     border-radius: 20px;
-    font-size: 0.9rem;
-    color: #d32f2f;
+    font-size: 0.85rem;
+    color: #1976d2;
+    font-weight: 600;
+    border: 1px solid #1976d2;
   }
 
   .profile-actions {
@@ -405,7 +408,7 @@
     flex: 1;
     padding: 12px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 32px;
     cursor: pointer;
     font-weight: 600;
     transition: all 0.2s;
@@ -519,6 +522,7 @@
     font-size: 0.85rem;
     color: #1976d2;
     font-weight: 600;
+    border: 1px solid #1976d2;
   }
 
   .remove-btn {

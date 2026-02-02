@@ -62,6 +62,7 @@
     flow.update((f) => ({
       ...f,
       selectedRecipe: recipe,
+      returnAfterRecipe: 11,
       screen: 6,
     }));
   }
@@ -69,12 +70,13 @@
 
 <div class="header-section">
   <button class="back-btn" on:click={back}> ← </button>
-  <h2>Recommended recipes</h2>
 </div>
-
+<div>  
+  <h2>Recipes that match your pantry</h2>
+</div>
 {#if fallbackMessage}
   <div class="info-box warning">
-    ⚠️ {fallbackMessage}
+     {fallbackMessage}
   </div>
 {/if}
 
@@ -86,7 +88,7 @@
 {:else if results.length === 0}
   <p>No matching recipes found. Try adjusting your preferences.</p>
 {:else}
-  {#if results.length === 1}
+  {#if results.length === 0}
     <div class="alt-heading">Recipes you might also like</div>
   {/if}
   <div class="results-container">
@@ -97,7 +99,7 @@
         class:rank-2={i === 1}
         class:rank-3={i === 2}
       >
-        <div class="rank-badge">#{i + 1}</div>
+        <div class="rank-badge"># {i + 1}</div>
 
         <div class="top-row">
           {#if r.thumb}
@@ -159,10 +161,10 @@
     margin-bottom: 24px;
   }
 
-  h2 {
+  /* h2 {
     margin: 0;
     flex: 1;
-  }
+  } */
 
   .back-btn {
     background: none;
@@ -217,13 +219,21 @@
     margin-bottom: 60px;
   }
 
+  @media (min-width: 900px) {
+    .results-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+  }
+
   .recipe-card {
     position: relative;
     display: flex;
     flex-direction: column;
     padding: 0;
     border: 1px solid #e0e0e0;
-    border-radius: 12px;
+    border-radius: 30px;
     background: white;
     overflow: hidden;
     transition: all 0.3s;
@@ -235,39 +245,41 @@
 
   .recipe-card.rank-1 .rank-badge {
     background: #7ec87e;
-    color: #022000;
+    color: white;
   }
 
   .rank-badge {
     position: absolute;
-    top: -8px;
-    left: 16px;
-    padding: 4px 12px;
-    border-radius: 12px;
+    top: 8px;
+    left: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 1rem;
     z-index: 1;
     background: #e0e0e0;
-    color: #555;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   .top-row {
     display: flex;
     gap: 16px;
     align-items: stretch;
+    padding: 16px;
   }
 
   .thumb-wrap {
     width: 160px;
-    align-self: stretch;
     display: flex;
+    flex-shrink: 0;
   }
 
   .recipe-thumb {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 0;
+    border-radius: 12px;
     flex-shrink: 0;
   }
 
@@ -276,7 +288,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 16px 16px 16px 0;
   }
 
   .bottom-row {
@@ -293,6 +304,7 @@
   }
 
   .stats {
+    padding: 8px 0;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -330,7 +342,9 @@
   }
 
   .details-btn:hover {
-    background: #ff5252;
+    background: #7ec87e;
+    box-shadow: #538553 0px 4px 8px;
+
   }
 
   button {
@@ -373,7 +387,8 @@
     background: #e3f2fd;
     color: #1976d2;
     border-radius: 12px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
+    border: 1px solid #1976d2;
   }
 </style>

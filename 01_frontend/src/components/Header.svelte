@@ -102,6 +102,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
     width: 40px;
     height: 40px;
   }

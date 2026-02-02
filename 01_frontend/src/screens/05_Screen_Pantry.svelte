@@ -71,19 +71,16 @@
 {#if $flow.pantry.length === 0}
   <p class="hint">No ingredients yet.</p>
 {:else}
-  <ul class="list">
+  <div class="tags-container">
     {#each $flow.pantry as item (item.name)}
-      <li class="row">
-        <span class="name">{item.name}</span>
-
-        <div class="actions">
-          <button type="button" class="remove-btn" on:click={() => removeIngredient(item.name)}>
-            Remove
-          </button>
-        </div>
-      </li>
+      <div class="tag-item">
+        <span class="tag-name">{item.name}</span>
+        <button type="button" class="remove-x" on:click={() => removeIngredient(item.name)}>
+          ×
+        </button>
+      </div>
     {/each}
-  </ul>
+  </div>
 {/if}
 
 <div class="footer">
@@ -195,46 +192,48 @@
     opacity: 0.7;
   }
 
-  .list {
-    list-style: none;
-    padding: 0;
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     margin: 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
   }
 
-  .row {
-    display: flex;
-    justify-content: space-between;
+  .tag-item {
+    display: inline-flex;
     align-items: center;
-    padding: 12px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    border-left: 4px solid #044000;
-  }
-
-  .name {
-    font-weight: 500;
-  }
-
-  .actions {
-    display: flex;
     gap: 8px;
+    padding: 10px 16px;
+    background: #e3f2fd;
+    border-radius: 25px;
+    border: 1px solid #1976d2;
   }
 
-  .remove-btn {
-    padding: 6px 12px;
-    background: #d4edda;
+  .tag-name {
+    font-weight: 600;
+    color: #1976d2;
+    font-size: 0.85rem;
+  }
+
+  .remove-x {
+    background: none;
     border: none;
-    border-radius: 6px;
+    color: #1976d2;
     cursor: pointer;
-    font-size: 0.9rem;
-    color: #155724;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
   }
 
-  .remove-btn:hover {
-    background: #c3e6cb;
+  .remove-x:hover {
+    color: #c62828;
+    transform: scale(1.2);
   }
 
   .footer {

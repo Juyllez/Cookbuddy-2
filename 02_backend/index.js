@@ -6,6 +6,35 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cors());
 
+function normalizeAllergies(allergiesParam = "") {
+    const raw = (allergiesParam || "")
+        .split(",")
+        .map(a => a.trim().toLowerCase())
+        .filter(Boolean);
+
+    const map = new Map([
+        ["lactose", "dairy"],
+        ["laktose", "dairy"],
+        ["milk", "dairy"],
+        ["cheese", "dairy"],
+        ["butter", "dairy"],
+        ["eggs", "egg"],
+        ["egg", "egg"],
+        ["nuts", "tree nut"],
+        ["nut", "tree nut"],
+        ["peanut", "peanut"],
+        ["gluten", "gluten"],
+        ["wheat", "wheat"],
+        ["soy", "soy"],
+        ["fish", "fish"],
+        ["shellfish", "shellfish"],
+        ["sesame", "sesame"]
+    ]);
+
+    const normalized = raw.map(a => map.get(a) || a);
+    return Array.from(new Set(normalized));
+}
+
 app.get("/", (req, res) => {
     res.send("Welcome to the Recipe Master Backend!");
 });
@@ -18,12 +47,7 @@ app.get("/recipes/recommended", async (req, res) => {
     console.log("Received recommended recipes request", req.query);
     try {
         const { dietType = "omnivore", allergies: allergiesParam = "" } = req.query;
-        
-        // Parse allergies from comma-separated string
-        const allergies = (allergiesParam || "")
-            .split(",")
-            .map(a => a.trim().toLowerCase())
-            .filter(Boolean);
+        const allergies = normalizeAllergies(allergiesParam);
         
         console.log("Filtering for allergies:", allergies);
 
@@ -55,6 +79,19 @@ app.get("/recipes/recommended", async (req, res) => {
         
         // Additional client-side allergy filtering for safety
         if (allergies.length > 0) {
+            // Create a reverse map of common allergen keywords
+            const allergyKeywords = {
+                "dairy": ["milk", "cheese", "butter", "cream", "yogurt", "lactose", "whey", "casein"],
+                "egg": ["egg", "eggs", "eggy"],
+                "gluten": ["gluten", "wheat", "flour", "bread", "pasta"],
+                "tree nut": ["almond", "walnut", "pecan", "cashew", "pistachio", "macadamia", "hazelnut", "chestnut"],
+                "peanut": ["peanut", "groundnut"],
+                "soy": ["soy", "soybean", "tofu", "edamame"],
+                "fish": ["fish", "salmon", "tuna", "cod", "bass", "trout", "anchovy"],
+                "shellfish": ["shellfish", "shrimp", "prawn", "crab", "lobster", "clam", "mussel", "oyster", "scallop"],
+                "sesame": ["sesame", "tahini"]
+            };
+            
             results = results.filter(recipe => {
                 const ingredientNames = [];
                 if (Array.isArray(recipe.extendedIngredients)) {
@@ -65,10 +102,13 @@ app.get("/recipes/recommended", async (req, res) => {
                 }
                 if (recipe.title) ingredientNames.push(recipe.title.toLowerCase());
                 
-                // Check if any allergy keyword is found in ingredients
-                const hasAllergy = allergies.some(allergy => 
-                    ingredientNames.some(name => name.includes(allergy))
-                );
+                // Check if any allergen is found in ingredients
+                const hasAllergy = allergies.some(allergy => {
+                    const keywords = allergyKeywords[allergy] || [allergy];
+                    return keywords.some(keyword => 
+                        ingredientNames.some(name => name.includes(keyword))
+                    );
+                });
                 
                 if (hasAllergy) {
                     console.log(`🚫 Filtered out "${recipe.title}" - contains allergy: ${allergies.join(", ")}`);
@@ -132,13 +172,12 @@ app.get("/recipes", async (req, res) => {
             allergies: allergiesParam = ""
         } = req.query;
         
-        // Parse allergies from comma-separated string
-        const allergies = (allergiesParam || "")
-            .split(",")
-            .map(a => a.trim().toLowerCase())
-            .filter(Boolean);
+        const allergies = normalizeAllergies(allergiesParam);
         
         console.log("Parameters:", { dietType, taste, difficulty, cookingTime, pantry, allergies });
+        
+        // Define pantry array BEFORE using it in buildQueryTerm
+        const pantryArray = pantry ? pantry.split(",").map(i => i.trim().toLowerCase()) : [];
         
         // Build query term by taste and pantry items
         function buildQueryTerm() {
@@ -151,8 +190,6 @@ app.get("/recipes", async (req, res) => {
             if (taste === "savory") return "pasta";
             return "chicken";
         }
-
-        const pantryArray = pantry ? pantry.split(",").map(i => i.trim().toLowerCase()) : [];
         const timeRange = {
           "10": { min: 0, max: 15 },
           "20": { min: 10, max: 25 },
@@ -254,7 +291,23 @@ app.get("/recipes", async (req, res) => {
             const matchResult = pantryArray.length ? computeMatchCount(r) : { count: 0, matched: [] };
             const matchCount = matchResult.count;
             const matchedItems = matchResult.matched;
-            const matchScore = pantryArray.length ? Math.round((matchCount / pantryArray.length) * 100) : 0;
+            
+            // Calculate match score: prioritize pantry matches, then time proximity
+            let matchScore = 0;
+            if (pantryArray.length > 0) {
+                // Pantry match score (0-100): how many pantry items are in the recipe
+                const pantryScore = (matchCount / pantryArray.length) * 100;
+                
+                // Time score (0-100): how close to target time (max 100 points)
+                const targetTime = (timeRange.min + timeRange.max) / 2;
+                const timeDeviation = Math.abs(recipeTime - targetTime);
+                const maxDeviation = (timeRange.max - timeRange.min) / 2;
+                const timeScore = Math.max(0, 100 - (timeDeviation / maxDeviation) * 100);
+                
+                // Total: pantry (50%) + time (50%)
+                matchScore = Math.round((pantryScore * 0.5) + (timeScore * 0.5));
+            }
+            
             return { ...r, recipeTime, timeMatch, matchCount, matchScore, matchedItems };
         });
 
@@ -288,18 +341,73 @@ app.get("/recipes", async (req, res) => {
                 return r.timeMatch;
             })
             .sort((a, b) => {
-                // Sort by match count first (higher is better) - recipes with pantry matches go to top
+                // Priority 1: Sort by pantry match count first (higher is better)
                 if (b.matchCount !== a.matchCount) return b.matchCount - a.matchCount;
-                // Then by cooking time (shorter is better)
-                return (a.recipeTime || 999) - (b.recipeTime || 999);
+                // Priority 2: Then by cooking time (closer to target is better)
+                const targetTime = (timeRange.min + timeRange.max) / 2;
+                const deviationA = Math.abs(a.recipeTime - targetTime);
+                const deviationB = Math.abs(b.recipeTime - targetTime);
+                return deviationA - deviationB;
             })
             .slice(0, 10);
         
         const withMatchesCount = topRecipes.filter(r => r.matchCount > 0).length;
         console.log(`After filtering: ${topRecipes.length} recipes total${pantryArray.length ? ` (${withMatchesCount} with pantry matches)` : ''}`);
 
+        // If we have less than 3 recipes, fetch alternatives with looser matching
+        let finalRecipes = topRecipes;
+        if (finalRecipes.length < 3 && pantryArray.length > 0) {
+            console.log(`⚠️  Found only ${finalRecipes.length} recipe(s)! Fetching alternative recipes to reach 3...`);
+            try {
+                // Fetch recipes with just the first pantry item
+                const firstItem = pantryArray[0];
+                let altUrl = `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(firstItem)}&number=20&addRecipeInformation=true&fillIngredients=true`;
+                if (dietType === "vegetarian") altUrl += "&diet=vegetarian";
+                if (dietType === "vegan") altUrl += "&diet=vegan";
+                if (dietType === "pescatarian") altUrl += "&diet=pescatarian";
+                altUrl += `&maxReadyTime=${timeRange.max}`;
+                if (allergies.length > 0) {
+                    altUrl += `&intolerances=${encodeURIComponent(allergies.join(","))}`;
+                }
+                altUrl += `&apiKey=${process.env.SPOONACULAR_API_KEY}`;
+                
+                const altRes = await fetch(altUrl);
+                const altData = await altRes.json();
+                const altResults = Array.isArray(altData) ? altData : (altData.results || []);
+                
+                // Score alternatives with simple approach
+                const altScored = altResults.map(r => {
+                    const recipeTime = r.readyInMinutes || 30;
+                    const timeMatch = recipeTime >= timeRange.min && recipeTime <= timeRange.max;
+                    
+                    // For alternatives, assume they have at least the pantry item they were searched for
+                    return { 
+                        ...r, 
+                        recipeTime, 
+                        timeMatch, 
+                        matchCount: 1,
+                        matchScore: 50, // Middle score for alternatives
+                        matchedItems: [firstItem] 
+                    };
+                });
+                
+                // Filter by time and sort
+                const filteredAlt = altScored
+                    .filter(r => r.timeMatch)
+                    .sort((a, b) => (a.recipeTime || 999) - (b.recipeTime || 999));
+                
+                // Combine: keep existing recipes + add alternatives up to 3 total
+                finalRecipes = [...finalRecipes, ...filteredAlt].slice(0, 3);
+                    
+                console.log(`Found ${finalRecipes.length} total recipes (${topRecipes.length} strict + ${filteredAlt.length} alternatives)`);
+            } catch (e) {
+                console.error(`Error fetching alternatives: ${e.message}`);
+                // If fetching alternatives fails, just use what we have
+            }
+        }
+
         // Transform to frontend format
-        const recipes = await Promise.all(topRecipes.map(async (r) => {
+        const recipes = await Promise.all(finalRecipes.map(async (r) => {
             let ingredients = [];
             
             // Try to get extended ingredients first
@@ -362,24 +470,66 @@ app.get("/random", async (req, res) => {
     }
 });
 
+app.get("/recipes/details/:id", async (req, res) => {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "Missing recipe id" });
+
+    try {
+        const detailUrl = `https://api.spoonacular.com/recipes/${id}/information?apiKey=${process.env.SPOONACULAR_API_KEY}`;
+        const detailRes = await fetch(detailUrl);
+        if (!detailRes.ok) {
+            return res.status(detailRes.status).json({ error: "Failed to fetch recipe details" });
+        }
+        const detail = await detailRes.json();
+        const diets = Array.isArray(detail.diets) ? detail.diets : [];
+        const dietType = diets.includes("vegan")
+            ? "vegan"
+            : diets.includes("vegetarian")
+            ? "vegetarian"
+            : diets.includes("pescatarian")
+            ? "pescatarian"
+            : "omnivore";
+
+        const ingredients = Array.isArray(detail.extendedIngredients)
+            ? detail.extendedIngredients.map((ing) => ing.original || ing.name).filter(Boolean)
+            : [];
+
+        res.json({
+            id: detail.id,
+            title: detail.title,
+            image: detail.image,
+            thumb: detail.image,
+            minutes: detail.readyInMinutes || 30,
+            dietType,
+            ingredients,
+            instructions: detail.instructions || "",
+            analyzedInstructions: detail.analyzedInstructions || [],
+            summary: detail.summary || ""
+        });
+    } catch (error) {
+        console.error("Error fetching recipe details:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post("/chat", async (req, res) => {
     console.log("Received chat request:", req.body);
     const { message, context = "general", recipe = "" } = req.body;
 
     try {
-        // Unterschiedliche Prompts je nach Kontext
+        // Different prompts based on context
         let systemPrompt = "";
         
         if (context === "ingredient") {
-            // Kontext: Fragen zu Zutatenersetzen
-            systemPrompt = `Du bist ein freundlicher und hilfreicher Kochassistent.
-Der Benutzer hat ein Rezept ausgewählt und fragt nach Alternativen zu bestimmten Zutaten oder anderen Kochfragen.
-Gib kurze, praktische Vorschläge (2-3 Alternativen) mit kurzer Erklärung.
-Sei kurz und prägnant. Antworte auf Deutsch.
-${recipe ? `Das aktuelle Rezept ist: ${recipe}` : ''}`;
+            // Context: Questions about ingredient substitutes
+            systemPrompt = `You are a friendly and helpful cooking assistant.
+The user has selected a recipe and is asking about alternatives to specific ingredients or other cooking questions.
+Give short, practical suggestions (2-3 alternatives) with brief explanations.
+Be concise and to the point. Answer in English.
+${recipe ? `The current recipe is: ${recipe}` : ''}`;
         } else {
-            systemPrompt = `Du bist ein freundlicher und hilfreicher Kochassistent. 
-Antworte kurz und prägnant auf Deutsch.`;
+            systemPrompt = `You are a friendly and helpful cooking assistant. 
+Answer concisely and to the point in English.`;
         }
 
         const fullPrompt = `${systemPrompt}\n\nFrage: ${message}\n\nAntwort:`;
@@ -399,7 +549,8 @@ Antworte kurz und prägnant auf Deutsch.`;
         });
         
         if (!ollamaResponse.ok) {
-            throw new Error(`Ollama API error: ${ollamaResponse.status}`);
+            throw new Error(`Ollama API            cd "/Users/juylla/hfg/IG3/PS3/Cookbuddy/Cookbuddy 2/02_backend"
+            npm run dev error: ${ollamaResponse.status}`);
         }
 
         const ollamaJson = await ollamaResponse.json();

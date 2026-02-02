@@ -66,6 +66,7 @@ function createFlow() {
 
     // Navigation helpers
     returnAfterProfile: null, // optional target screen after editing profile
+    returnAfterRecipe: null, // optional target screen after viewing a recipe
   };
   
   const store = writable(initialState);
